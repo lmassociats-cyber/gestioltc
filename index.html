@@ -73,11 +73,25 @@ h1,h2,h3{font-family:'Space Grotesk',sans-serif;font-weight:600;margin:0;}
 .chat-inputbar{display:flex;gap:8px;margin-top:10px;}
 .chat-inputbar input{flex:1;padding:10px 12px;border:1px solid var(--line-strong);border-radius:20px;background:var(--paper-2);font-size:13px;}
 .chat-inputbar button{background:var(--green);color:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:15px;cursor:pointer;flex-shrink:0;}
+.chat-inputbar button.grabando{animation:micPulso 1s ease-in-out infinite;}
+@keyframes micPulso{0%,100%{opacity:1;}50%{opacity:0.5;}}
 .chat-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:500;background:var(--ink);color:var(--paper);padding:12px 18px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.25);display:flex;align-items:center;gap:10px;max-width:340px;cursor:pointer;animation:chatParpadeo 0.6s ease-in-out 4;}
 .chat-toast .icono{font-size:16px;}
 .chat-toast .txt b{display:block;font-size:13px;}
 .chat-toast .txt span{display:block;font-size:12px;opacity:0.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:250px;}
 @keyframes chatParpadeo{0%,100%{background:var(--ink);box-shadow:0 6px 20px rgba(0,0,0,0.25);}50%{background:var(--green);box-shadow:0 6px 24px rgba(47,107,79,0.55);}}
+#urgenteContainer{position:fixed;top:16px;right:16px;z-index:600;display:flex;flex-direction:column;gap:10px;max-width:280px;}
+.urgente-card{background:#7A1F1F;color:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 6px 20px rgba(122,31,31,0.4);cursor:pointer;animation:urgenteParpadeo 1.5s ease-in-out infinite;}
+.urgente-card.asignada{animation:none;background:#5a3a1f;opacity:0.9;cursor:default;}
+@keyframes urgenteParpadeo{0%,100%{background:#7A1F1F;}50%{background:#C93A3A;}}
+.urgente-card .tipo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;}
+.urgente-card .detalle{font-size:12px;margin-top:4px;opacity:0.9;}
+.urgente-card button{margin-top:8px;background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;}
+.urgente-panel{position:fixed;z-index:601;background:var(--paper);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.25);padding:16px;width:260px;display:none;}
+.urgente-panel.open{display:block;}
+.urgente-panel .opt{padding:10px 12px;border-radius:8px;background:var(--paper-2);margin-bottom:8px;cursor:pointer;font-size:13px;font-weight:600;border:1px solid var(--line);}
+.urgente-panel .opt:hover{border-color:#7A1F1F;}
+.urgente-btn{background:#7A1F1F;color:#fff;border:none;border-radius:22px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
 .opgate{position:absolute;inset:0;background:var(--paper);z-index:50;display:none;align-items:center;justify-content:center;padding:30px;border-radius:26px;}
 .opgate.open{display:flex;}
 .opgate-panel{width:100%;}
@@ -238,6 +252,7 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
   <div class="accesos">
     <button id="btnAccesoOp" class="active" onclick="mostrarApp('operario')">App operario</button>
     <button id="btnAccesoAdmin" onclick="mostrarApp('admin')">Panel de administración</button>
+    <button class="urgente-btn" onclick="urgenteAbrirPanel(event,'admin')">🚨 Urgente</button>
   </div>
 </div>
 
@@ -392,7 +407,8 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
               <div class="chat-inputbar">
                 <button type="button" onclick="document.getElementById('opChatFile').click()" style="background:var(--paper-2);color:var(--ink);border:1px solid var(--line-strong);">📎</button>
                 <input type="file" id="opChatFile" accept="image/*,video/*" multiple style="display:none;" onchange="opAdjuntarArchivo(this)">
-                <input type="text" id="opChatInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') opEnviarChat()">
+                <button type="button" onclick="iniciarVoz('opChatInput', idiomaViewerOperario(), this)">🎤</button>
+              <input type="text" id="opChatInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') opEnviarChat()">
                 <button onclick="opEnviarChat()">➤</button>
               </div>
             </div>
@@ -402,7 +418,8 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
               <button class="smallbtn" style="width:auto;margin:0 0 10px 0;padding:6px 12px;font-size:11px;color:var(--red);border-color:var(--red);" onclick="opSalirDeGrupo()">Finalizar mi participación en este grupo</button>
               <div class="chat-thread" id="opGrupoThread"></div>
               <div class="chat-inputbar">
-                <input type="text" id="opGrupoInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') opGrupoEnviar()">
+                <button type="button" onclick="iniciarVoz('opGrupoInput', idiomaViewerOperario(), this)">🎤</button>
+              <input type="text" id="opGrupoInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') opGrupoEnviar()">
                 <button onclick="opGrupoEnviar()">➤</button>
               </div>
             </div>
@@ -411,12 +428,15 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
               <div class="empty-hint" id="opDirectoInfo" style="margin-bottom:10px;"></div>
               <div class="chat-thread" id="opDirectoThread"></div>
               <div class="chat-inputbar">
-                <input type="text" id="opDirectoInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') opDirectoEnviar()">
+                <button type="button" onclick="iniciarVoz('opDirectoInput', idiomaViewerOperario(), this)">🎤</button>
+              <input type="text" id="opDirectoInput" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') opDirectoEnviar()">
                 <button onclick="opDirectoEnviar()">➤</button>
               </div>
             </div>
           </div>
         </div>
+
+        <button class="urgente-btn" style="position:absolute;bottom:78px;right:14px;z-index:40;" onclick="urgenteAbrirPanel(event,'operario')">🚨 Urgente</button>
 
         <div class="navbar">
           <div class="navitem active" data-tab="fichaje" onclick="showOpTab('fichaje')">Fichar</div>
@@ -569,6 +589,36 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
             <button class="smallbtn" style="width:auto;margin:0;padding:9px 16px;" onclick="dlDescargarGestionPagos()">💶 Gestión de pagos (PDF, una hoja por operario)</button>
           </div>
         </div>
+
+        <div id="bloqueRegistroActividad" class="hidden">
+          <div class="section-title2">Registro de actividad</div>
+          <div class="card">
+            <div class="empty-hint" style="margin-bottom:10px;">Cada acción de cualquier operario o usuario del panel queda registrada. Descárgala en PDF por persona, por mes o por un rango de fechas (máximo 3 meses).</div>
+            <div class="row">
+              <div class="field"><label>Periodo</label>
+                <select id="actModoPeriodo" onchange="actActualizarPeriodo()">
+                  <option value="mes">Por mes</option>
+                  <option value="fechas">Por rango de fechas (máx. 3 meses)</option>
+                </select>
+              </div>
+              <div class="field" id="actCampoMes"><label>Mes</label>
+                <select id="actMes">
+                  <option value="2026-07" selected>Julio 2026</option>
+                  <option value="2026-06">Junio 2026</option>
+                  <option value="2026-05">Mayo 2026</option>
+                </select>
+              </div>
+              <div class="field" id="actCampoDesde" style="display:none;"><label>Desde</label><input type="date" id="actFechaDesde"></div>
+              <div class="field" id="actCampoHasta" style="display:none;"><label>Hasta</label><input type="date" id="actFechaHasta"></div>
+            </div>
+            <label class="checkline"><input type="checkbox" id="actTodos" checked onchange="actToggleTodos(this.checked)"> Todos (operarios y usuarios del panel)</label>
+            <div id="actPersonasLista" style="display:none;margin:8px 0;"></div>
+            <div style="margin-top:12px;">
+              <button class="smallbtn" style="width:auto;margin:0;padding:9px 16px;" onclick="actDescargarPDF()">🗂 Ver / descargar registro de actividad (PDF)</button>
+            </div>
+            <div id="actResultado" style="margin-top:14px;"></div>
+          </div>
+        </div>
       </div>
 
       <div class="subview" id="sub-operarios">
@@ -586,6 +636,10 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
             <div class="field"><label>Apellidos</label><input type="text" id="cf_apellidos"></div>
             <div class="field"><label>DNI</label><input type="text" id="cf_dni"></div>
           </div>
+          <div style="display:flex;align-items:center;gap:10px;margin:-6px 0 14px;">
+            <button class="smallbtn" style="width:auto;margin:0;padding:8px 16px;background:var(--green);color:#fff;border-color:var(--green);" onclick="cfgGuardarOperario()">Guardar</button>
+            <span id="cfgGuardadoOk" style="display:none;font-size:12px;color:var(--green);">✓ Datos guardados correctamente</span>
+          </div>
           <div class="row">
             <div class="field"><label>Correo electrónico</label><input type="text" id="cf_email" placeholder="nombre@correo.com"></div>
             <div class="field"><label>Teléfono</label><input type="text" id="cf_telefono" placeholder="600 000 000"></div>
@@ -593,6 +647,17 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
           <div class="row">
             <div class="field"><label>Población</label><input type="text" id="cf_poblacion" placeholder="Ej. Cambrils" onblur="onCambioPoblacion()"></div>
             <div class="field"><label>Fecha de alta en la empresa</label><input type="date" id="cf_fechaAlta"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Idioma principal (voz, escritura y chat)</label>
+              <select id="cf_idioma">
+                <option value="es">Español</option>
+                <option value="it">Italiano</option>
+                <option value="ro">Rumano</option>
+                <option value="en">Inglés</option>
+                <option value="fr">Francés</option>
+              </select>
+            </div>
           </div>
           <div class="card">
             <h3>Fiestas locales de la población (2 días)</h3>
@@ -866,6 +931,7 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
               <div class="chat-inputbar">
                 <button type="button" onclick="document.getElementById('chatFileAdmin').click()" style="background:var(--paper-2);color:var(--ink);border:1px solid var(--line-strong);">📎</button>
                 <input type="file" id="chatFileAdmin" accept="image/*,video/*" multiple style="display:none;" onchange="chatAdjuntarArchivoAdmin(this)">
+                <button type="button" onclick="iniciarVoz('chatInputAdmin', idiomaViewerAdmin(), this)">🎤</button>
                 <input type="text" id="chatInputAdmin" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') chatEnviarAdmin()">
                 <button onclick="chatEnviarAdmin()">➤</button>
               </div>
@@ -899,7 +965,8 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
               <div id="chatGrupoMiembrosBar"></div>
               <div class="chat-thread" id="chatThreadGrupo" style="max-height:420px;overflow-y:auto;padding:8px;background:var(--paper-2);border-radius:10px;border:1px solid var(--line);"></div>
               <div class="chat-inputbar">
-                <input type="text" id="chatInputGrupo" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') chatEnviarGrupo()">
+                <button type="button" onclick="iniciarVoz('chatInputGrupo', idiomaViewerAdmin(), this)">🎤</button>
+              <input type="text" id="chatInputGrupo" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter') chatEnviarGrupo()">
                 <button onclick="chatEnviarGrupo()">➤</button>
               </div>
             </div>
@@ -949,7 +1016,7 @@ function adminFichIniciarContador(){ clearInterval(adminFich.timerId); adminFich
 function adminFichPararContador(){ clearInterval(adminFich.timerId); }
 function adminFichPintarLog(){
   document.getElementById('adminFichLog').innerHTML = adminFich.tramos.length ? adminFich.tramos.map(t=>`
-    <div class="metricrow"><span>${t.label}</span><span class="mono">${t.hora}</span></div>
+    <div class="metricrow"><span>${t.label}${t.firma ? ' <span style="color:var(--green);" title="Firmado">✓ firmado</span>' : ''}</span><span class="mono">${t.hora}</span></div>
   `).join('') : '<div class="empty-hint">Sin fichajes todavía.</div>';
 }
 function adminFichToggle(){
@@ -957,18 +1024,25 @@ function adminFichToggle(){
   const hora = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   if(adminFich.estado==='sin_iniciar' || adminFich.estado==='pausado'){
     adminFich.tramos.push({label: adminFich.estado==='sin_iniciar' ? 'Inicio de jornada' : 'Reanudar jornada', hora});
+    registrarActividad(adminSesionUsuario?adminSesionUsuario.nombre:'Administración','Fichaje despacho','Inicio de jornada');
     adminFich.estado='trabajando'; adminFichIniciarContador();
     btn.textContent='Finalizar jornada'; btn.classList.remove('start'); btn.classList.add('stop');
     document.getElementById('adminFichEstado').textContent='Jornada en curso';
     document.getElementById('adminFichPausaBtn').disabled=false;
+    adminFichPintarLog();
   } else {
-    adminFich.tramos.push({label:'Fin de tramo', hora});
-    adminFich.estado='pausado'; adminFichPararContador();
-    btn.textContent='Iniciar jornada'; btn.classList.remove('stop'); btn.classList.add('start');
-    document.getElementById('adminFichEstado').textContent='Tramo cerrado';
-    document.getElementById('adminFichPausaBtn').disabled=true;
+    // finalizar jornada requiere firma antes de completarse
+    vacSigCallback = (firmaDataUrl)=>{
+      adminFich.tramos.push({label:'Fin de tramo', hora, firma:firmaDataUrl});
+      registrarActividad(adminSesionUsuario?adminSesionUsuario.nombre:'Administración','Fichaje despacho','Fin de jornada (firmado)');
+      adminFich.estado='pausado'; adminFichPararContador();
+      btn.textContent='Iniciar jornada'; btn.classList.remove('stop'); btn.classList.add('start');
+      document.getElementById('adminFichEstado').textContent='Tramo cerrado';
+      document.getElementById('adminFichPausaBtn').disabled=true;
+      adminFichPintarLog();
+    };
+    vacAbrirFirma();
   }
-  adminFichPintarLog();
 }
 function adminFichPausa(){
   if(adminFich.estado!=='trabajando') return;
@@ -1214,10 +1288,12 @@ function adminIniciarSesion(){
   document.getElementById('adminLoginWarn').style.display = 'none';
   adminSesionUsuario = user;
   adminSesionIniciada = true;
+  registrarActividad(user.nombre,'Inicio de sesión','Panel de administración');
   adminRenderGate();
 }
 function adminAplicarPermisos(){
   const user = adminSesionUsuario;
+  if(typeof actAplicarVisibilidad==='function') actAplicarVisibilidad();
   document.getElementById('adminSesionInfo').innerHTML = user ? `Conectado como<br><b>${user.nombre} ${user.apellidos||''}</b>${user.esSuperAdmin?' · Superadmin':''} <br><a href="#" onclick="adminCerrarSesion();return false;" style="color:var(--red);">Cerrar sesión</a>` : '';
   document.querySelectorAll('.adminnav .item').forEach(btn=>{
     const key = btn.dataset.sub;
@@ -1260,9 +1336,11 @@ function panelRenderUsuarios(){
       <label class="checkline" style="margin-bottom:4px;"><input type="checkbox" ${u.permisos[s.key]?'checked':''} onchange="adminTogglePermiso('${u.id}','${s.key}',this.checked)" ${u.esSuperAdmin?'disabled':''}> ${s.label}</label>
     `).join('') + `<label class="checkline" style="margin-bottom:4px;"><input type="checkbox" ${u.permisos.fichaje?'checked':''} onchange="adminTogglePermiso('${u.id}','fichaje',this.checked)" ${u.esSuperAdmin?'disabled':''}> Fichaje de despacho</label>`
       + `<label class="checkline" style="margin-bottom:4px;"><input type="checkbox" ${u.permisos.vacaciones?'checked':''} onchange="adminTogglePermiso('${u.id}','vacaciones',this.checked)" ${u.esSuperAdmin?'disabled':''}> Vacaciones (solicitar días propios)</label>`
-      + `<label class="checkline" style="margin-bottom:4px;"><input type="checkbox" ${u.permisos.correos?'checked':''} onchange="adminTogglePermiso('${u.id}','correos',this.checked)" ${u.esSuperAdmin?'disabled':''}> Gestor de correos (consulta)</label>`;
+      + `<label class="checkline" style="margin-bottom:4px;"><input type="checkbox" ${u.permisos.correos?'checked':''} onchange="adminTogglePermiso('${u.id}','correos',this.checked)" ${u.esSuperAdmin?'disabled':''}> Gestor de correos (consulta)</label>`
+      + `<label class="checkline" style="margin-bottom:4px;"><input type="checkbox" ${u.permisos.actividad?'checked':''} onchange="adminTogglePermiso('${u.id}','actividad',this.checked)" ${u.esSuperAdmin?'disabled':''}> Registro de actividad</label>`;
     let accion = '';
-    if(u.accesoEstado==='sin_activar') accion = `<button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="adminRegenerarCodigo('${u.id}')">Regenerar código</button>`;
+    if(u.accesoEstado==='sin_activar') accion = `<button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="adminRegenerarCodigo('${u.id}')">Regenerar código</button>`
+      + (u.codigoDescarga ? ` <button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;color:var(--green);border-color:var(--green);" onclick="opEnviarEnlacePorCorreo('${u.id}')">✉ Enviar enlace</button>` : '');
     else if(u.esSuperAdmin && u.accesoEstado==='activo') accion = `<button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="adminRegenerarCodigo('${u.id}')">Código para otro ordenador</button> <button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="adminCambiarPasswordSuperadmin('${u.id}')">Cambiar contraseña</button>`;
     else if(u.accesoEstado==='activo') accion = `<button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;color:var(--red);border-color:var(--red);" onclick="adminRevocarUsuario('${u.id}')">Revocar acceso</button>`;
     else if(u.accesoEstado==='revocado') accion = `<button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;color:var(--green);border-color:var(--green);" onclick="adminRegenerarCodigo('${u.id}')">Generar nuevo código</button>`;
@@ -1282,7 +1360,7 @@ function panelRenderUsuarios(){
 function adminTogglePermiso(userId, key, valor){
   const u = cfgOperarios.find(x=>x.id===userId);
   if(u) u.permisos[key] = valor;
-  if(adminSesionUsuario && adminSesionUsuario.id===userId) adminAplicarPermisos();
+  if(adminSesionUsuario && adminSesionUsuario.id===userId){ adminAplicarPermisos(); if(typeof actAplicarVisibilidad==='function') actAplicarVisibilidad(); }
 }
 function adminRegenerarCodigo(userId){
   const u = cfgOperarios.find(x=>x.id===userId);
@@ -1323,10 +1401,10 @@ function adminCrearUsuario(){
   const esSuper = document.getElementById('nuevoAdminSuperAdmin').checked;
   let nuevo;
   if(esSuper){
-    const permisosCompletos = {fichaje:true, vacaciones:true, correos:true}; SECCIONES_PERMISO.forEach(s=>permisosCompletos[s.key]=true);
+    const permisosCompletos = {fichaje:true, vacaciones:true, correos:true, actividad:true}; SECCIONES_PERMISO.forEach(s=>permisosCompletos[s.key]=true);
     nuevo = cfgNuevoOp({nombre, apellidos:'', tipoAcceso:'panel_administracion', codigoDescarga:generarCodigo12(), accesoEstado:'sin_activar', esSuperAdmin:true, permisos:permisosCompletos});
   } else {
-    const permisosVacios = {fichaje:false, vacaciones:false, correos:false}; SECCIONES_PERMISO.forEach(s=>permisosVacios[s.key]=false);
+    const permisosVacios = {fichaje:false, vacaciones:false, correos:false, actividad:false}; SECCIONES_PERMISO.forEach(s=>permisosVacios[s.key]=false);
     nuevo = cfgNuevoOp({nombre, apellidos:'', tipoAcceso:'panel_administracion', codigoDescarga:generarCodigo12(), accesoEstado:'sin_activar', esSuperAdmin:false, permisos:permisosVacios});
   }
   cfgOperarios.push(nuevo);
@@ -1423,6 +1501,7 @@ function opIniciarSesion(){
   }
   document.getElementById('opLoginWarn').style.display = 'none';
   opSesionIniciada = true;
+  registrarActividad('Tomás','Inicio de sesión','App operario');
   opRenderGate();
 }
 setInterval(opRenderGate, 1500);
@@ -1432,6 +1511,7 @@ function mostrarApp(cual){
   document.getElementById('btnAccesoOp').classList.toggle('active', cual==='operario');
   document.getElementById('btnAccesoAdmin').classList.toggle('active', cual==='admin');
   if(cual==='admin') adminRenderGate();
+  if(typeof urgenteRenderTodas==='function') urgenteRenderTodas();
 }
 function showSub(name){
   document.querySelectorAll('.adminnav .item').forEach(b=>b.classList.toggle('active', b.dataset.sub===name));
@@ -1446,7 +1526,7 @@ function showSub(name){
   if(name==='actualizaciones') actualizacionRender();
   if(name==='eventos') evRenderTabla();
   if(name==='vacaciones-admin') admVacacionesRender();
-  if(name==='general') panelRenderAll();
+  if(name==='general'){ panelRenderAll(); actAplicarVisibilidad(); }
   if(name==='operarios') { cfgRenderSidebar(); cfgCargar(); }
 }
 
@@ -1666,6 +1746,7 @@ function vacEnviarDesdeCalendario(){
     const diasAnioActual = d.dias - diasAnioAnterior;
     if(op && diasAnioAnterior>0){ op.vacPendientesAnioAnterior -= diasAnioAnterior; opPintarStatsVacaciones(); }
     SOLICITUDES.unshift({id:Date.now(), op:'Tomás', color:'#1F6E52', desde:vacFmtCorta(d.desde), hasta:vacFmtCorta(d.hasta), desdeDate:d.desde, hastaDate:d.hasta, dias:d.dias, diasAnioAnterior, diasAnioActual, excedeLimite:d.excedeLimite, firma:firmaDataUrl, fechaFirma:new Date(2026,6,8).toLocaleDateString('es-ES'), estado:'pendiente'});
+    registrarActividad('Tomás','Solicitud de vacaciones',`${d.desde.toLocaleDateString('es-ES')} - ${d.hasta.toLocaleDateString('es-ES')}`);
     vacSelStart = null; vacSelEnd = null;
     vacCalRender();
     opPintarSolicitudes();
@@ -1673,6 +1754,7 @@ function vacEnviarDesdeCalendario(){
   };
   vacAbrirFirma();
 }
+let vacSigPuntos = [];
 function vacAbrirFirma(){
   const modal = document.getElementById('vacSigModal');
   modal.classList.add('open');
@@ -1682,20 +1764,47 @@ function vacAbrirFirma(){
   vacSigCtx.clearRect(0,0,canvas.width,canvas.height);
   vacSigCtx.lineWidth = 2; vacSigCtx.strokeStyle = '#1F2A24'; vacSigCtx.lineCap = 'round';
   vacSigHasStroke = false;
+  vacSigPuntos = [];
   let drawing = false;
   const pos = e=>{ const r=canvas.getBoundingClientRect(); const p=e.touches?e.touches[0]:e; return {x:p.clientX-r.left, y:p.clientY-r.top}; };
-  canvas.onpointerdown = e=>{ drawing=true; const p=pos(e); vacSigCtx.beginPath(); vacSigCtx.moveTo(p.x,p.y); };
-  canvas.onpointermove = e=>{ if(!drawing) return; const p=pos(e); vacSigCtx.lineTo(p.x,p.y); vacSigCtx.stroke(); vacSigHasStroke=true; };
+  canvas.onpointerdown = e=>{ drawing=true; const p=pos(e); vacSigCtx.beginPath(); vacSigCtx.moveTo(p.x,p.y); vacSigPuntos.push(p); };
+  canvas.onpointermove = e=>{ if(!drawing) return; const p=pos(e); vacSigCtx.lineTo(p.x,p.y); vacSigCtx.stroke(); vacSigHasStroke=true; vacSigPuntos.push(p); };
   window.onpointerup = ()=>{ drawing=false; };
+}
+function vacSigEsTrazoValido(puntos){
+  // Validación permisiva: solo se rechaza si claramente NO es una firma (un punto suelto o una raya recta),
+  // cualquier otro trazo con cierta variación se acepta sin más comprobaciones.
+  if(puntos.length < 6) return false; // prácticamente un punto/toque
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity, largo=0;
+  for(let i=0;i<puntos.length;i++){
+    const p = puntos[i];
+    minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x);
+    minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y);
+    if(i>0) largo += Math.hypot(p.x-puntos[i-1].x, p.y-puntos[i-1].y);
+  }
+  const ancho = maxX-minX, alto = maxY-minY;
+  if(ancho < 12 && alto < 12) return false; // un punto
+  const inicio = puntos[0], fin = puntos[puntos.length-1];
+  const distanciaRecta = Math.hypot(fin.x-inicio.x, fin.y-inicio.y);
+  const ratio = distanciaRecta>0 ? largo/distanciaRecta : largo;
+  if(largo > 25 && ratio < 1.12) return false; // trazo prácticamente recto, sin ningún matiz (una raya)
+  return true;
 }
 function vacSigClear(){
   const canvas = document.getElementById('vacSigCanvas');
   vacSigCtx.clearRect(0,0,canvas.width,canvas.height);
   vacSigHasStroke = false;
+  vacSigPuntos = [];
   document.getElementById('vacSigWarn').style.display = 'none';
 }
 function vacSigConfirmar(){
   if(!vacSigHasStroke){
+    document.getElementById('vacSigWarn').textContent = 'Dibuja tu firma antes de confirmar.';
+    document.getElementById('vacSigWarn').style.display = 'block';
+    return;
+  }
+  if(!vacSigEsTrazoValido(vacSigPuntos)){
+    document.getElementById('vacSigWarn').textContent = 'Ese trazo no parece una firma válida (raya o punto). Inténtalo de nuevo.';
     document.getElementById('vacSigWarn').style.display = 'block';
     return;
   }
@@ -1765,8 +1874,11 @@ let BANDEJA_TOMAS = [
 ];
 let CHATS = {
   'Tomás': [
-    {de:'admin', texto:'Hola Tomás, recuerda firmar el parte de guardia de este fin de semana.', hora:'09:12', visto:true, remitente:'Marta Soler Vidal'},
-    {de:'Tomás', texto:'Recibido, lo firmo hoy mismo.', hora:'09:15', visto:true},
+    {de:'admin', texto:'Hola Tomás, recuerda firmar el parte de guardia de este fin de semana.', hora:'09:12', visto:true, remitente:'Marta Soler Vidal', idioma:'es'},
+    {de:'Tomás', texto:'Recibido, lo firmo hoy mismo.', hora:'09:15', visto:true, idioma:'es'},
+  ],
+  'Stefano': [
+    {de:'Stefano', texto:'Buongiorno, sono arrivato al cantiere ma manca il materiale per finire il lavoro.', hora:'08:40', visto:false, idioma:'it'},
   ],
 };
 function chatObtenerHilo(nombre){
@@ -1815,7 +1927,56 @@ function actualizacionAutorizar(){
   opRenderGate();
   alert('Actualización autorizada y añadida al historial. No se ha modificado ni eliminado ningún dato anterior.');
 }
-function chatContenidoBurbuja(m){
+const IDIOMAS = {
+  es:{label:'Español', locale:'es-ES'}, it:{label:'Italiano', locale:'it-IT'},
+  ro:{label:'Rumano', locale:'ro-RO'}, en:{label:'Inglés', locale:'en-US'}, fr:{label:'Francés', locale:'fr-FR'},
+};
+function idiomaDeOperario(nombre){
+  const op = cfgOperarios.find(o=>o.nombre===nombre);
+  return op ? (op.idioma||'es') : 'es';
+}
+function idiomaViewerOperario(){ return idiomaDeOperario('Tomás'); }
+function idiomaViewerAdmin(){ return adminSesionUsuario ? (adminSesionUsuario.idioma||'es') : 'es'; }
+function iniciarVoz(inputId, idioma, boton){
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!Rec){ alert('Este navegador no soporta el reconocimiento de voz.'); return; }
+  const rec = new Rec();
+  rec.lang = (IDIOMAS[idioma] && IDIOMAS[idioma].locale) || 'es-ES';
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  if(boton){ boton.classList.add('grabando'); boton.textContent = '🔴'; }
+  rec.onresult = e=>{
+    const texto = e.results[0][0].transcript;
+    const input = document.getElementById(inputId);
+    input.value = (input.value ? input.value + ' ' : '') + texto;
+  };
+  rec.onerror = ()=>{ if(boton){ boton.classList.remove('grabando'); boton.textContent = '🎤'; } };
+  rec.onend = ()=>{ if(boton){ boton.classList.remove('grabando'); boton.textContent = '🎤'; } };
+  rec.start();
+}
+function traducirTexto(texto, origen, destino, callback){
+  if(!texto || origen===destino){ callback(texto); return; }
+  fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=${origen}|${destino}`)
+    .then(r=>r.json())
+    .then(data=>{ callback(data && data.responseData && data.responseData.translatedText ? data.responseData.translatedText : texto); })
+    .catch(()=>callback(texto));
+}
+function asegurarTraduccion(m, idiomaDestino, repintar){
+  if(!m.texto || !m.idioma || m.idioma===idiomaDestino) return null;
+  if(!m.traducciones) m.traducciones = {};
+  if(m.traducciones[idiomaDestino]) return m.traducciones[idiomaDestino];
+  if(!m._pidiendo) m._pidiendo = {};
+  if(!m._pidiendo[idiomaDestino]){
+    m._pidiendo[idiomaDestino] = true;
+    traducirTexto(m.texto, m.idioma, idiomaDestino, texto=>{
+      m.traducciones[idiomaDestino] = texto;
+      m._pidiendo[idiomaDestino] = false;
+      if(repintar) repintar();
+    });
+  }
+  return null;
+}
+function chatContenidoBurbuja(m, idiomaViewer, repintar){
   if(m.adjunto){
     const media = m.adjunto.tipo==='imagen'
       ? `<img src="${m.adjunto.dataUrl}" style="max-width:100%;border-radius:8px;display:block;">`
@@ -1826,6 +1987,11 @@ function chatContenidoBurbuja(m){
         ? `<span style="display:block;margin-top:6px;font-size:11px;opacity:0.7;">📍 Buscando dirección...</span>`
         : '';
     return media + ubicacionHtml;
+  }
+  if(idiomaViewer && m.idioma && m.idioma!==idiomaViewer){
+    const traducido = asegurarTraduccion(m, idiomaViewer, repintar);
+    if(traducido) return `${traducido}<div style="font-size:9px;opacity:0.6;margin-top:2px;">Traducido de ${IDIOMAS[m.idioma] ? IDIOMAS[m.idioma].label : m.idioma}: "${m.texto}"</div>`;
+    return `${m.texto} <i style="opacity:0.6;font-size:10px;">(traduciendo…)</i>`;
   }
   return m.texto;
 }
@@ -1871,7 +2037,7 @@ function opPintarGrupoActivo(){
     </div>`;
   document.getElementById('opGrupoThread').innerHTML = grupo.mensajes.map(m=>{
     const etiqueta = m.sistema ? '' : `<b style="display:block;font-size:11px;color:var(--green);margin-bottom:3px;">${m.de==='admin' ? m.remitente : m.de}</b>`;
-    return `<div class="chat-bubble ${m.de==='Tomás'?'mine':'theirs'}" style="${m.sistema?'opacity:0.7;font-style:italic;font-size:12px;align-self:center;':''}">${etiqueta}${chatContenidoBurbuja(m)}<span class="hora">${m.hora}</span></div>`;
+    return `<div class="chat-bubble ${m.de==='Tomás'?'mine':'theirs'}" style="${m.sistema?'opacity:0.7;font-style:italic;font-size:12px;align-self:center;':''}">${etiqueta}${chatContenidoBurbuja(m, idiomaViewerOperario(), opPintarGrupoActivo)}<span class="hora">${m.hora}</span></div>`;
   }).join('') || '<div class="empty-hint">Sin mensajes todavía.</div>';
   const thread = document.getElementById('opGrupoThread');
   thread.scrollTop = thread.scrollHeight;
@@ -1892,7 +2058,7 @@ function chatEtiquetaGrupalHtml(m){
 function opPintarChat(){
   const hilo = chatObtenerHilo('Tomás');
   document.getElementById('opChatThread').innerHTML = hilo.map(m=>`
-    <div class="chat-bubble ${m.de==='Tomás'?'mine':'theirs'}" style="${m.sistema?'opacity:0.8;':''}">${chatEtiquetaGrupalHtml(m)}${m.de==='admin' && m.remitente && !m.sistema ? `<b style="display:block;font-size:11px;color:var(--green);margin-bottom:3px;">${m.remitente}</b>` : ''}${chatContenidoBurbuja(m)}<span class="hora">${m.hora}${m.de==='Tomás' ? ` <span style="color:${m.visto?'#5AC8E8':'inherit'};">${m.visto?'✓✓':'✓'}</span>` : ''}</span></div>
+    <div class="chat-bubble ${m.de==='Tomás'?'mine':'theirs'}" style="${m.sistema?'opacity:0.8;':''}">${chatEtiquetaGrupalHtml(m)}${m.de==='admin' && m.remitente && !m.sistema ? `<b style="display:block;font-size:11px;color:var(--green);margin-bottom:3px;">${m.remitente}</b>` : ''}${chatContenidoBurbuja(m, idiomaViewerOperario(), opPintarChat)}<span class="hora">${m.hora}${m.de==='Tomás' ? ` <span style="color:${m.visto?'#5AC8E8':'inherit'};">${m.visto?'✓✓':'✓'}</span>` : ''}</span></div>
   `).join('') || '<div class="empty-hint">Sin mensajes todavía.</div>';
   const thread = document.getElementById('opChatThread');
   thread.scrollTop = thread.scrollHeight;
@@ -1979,11 +2145,144 @@ function playChatSound(){
     osc.stop(ctx.currentTime + 0.26);
   }catch(e){ /* audio no disponible en este navegador */ }
 }
+function playUrgentBeeps(n){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    for(let i=0;i<n;i++){
+      const start = ctx.currentTime + i*0.28;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(1200, start);
+      gain.gain.setValueAtTime(0.12, start);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(start); osc.stop(start + 0.19);
+    }
+  }catch(e){ /* audio no disponible */ }
+}
+
+/* ===== Atención urgente ===== */
+const URGENTE_DEFS = {
+  llamada: {label:'Llamada', pitidos:1, necesitaRef:false},
+  ubicacion: {label:'Ubicación', pitidos:2, necesitaRef:true},
+  sin_trabajo: {label:'Sin trabajo', pitidos:3, necesitaRef:false},
+  cliente_no_contesta: {label:'Cliente no contesta', pitidos:2, necesitaRef:true},
+};
+let ALERTAS_URGENTES = [];
+let urgenteModoActual = null, urgenteTipoSeleccionado = null;
+const URGENTE_BEEP_INTERVALS = {};
+
+function urgenteAbrirPanel(ev, modo){
+  urgenteModoActual = modo;
+  const panel = document.getElementById('urgentePanel');
+  const rect = ev.currentTarget.getBoundingClientRect();
+  panel.style.top = (rect.bottom + 8) + 'px';
+  panel.style.left = Math.max(10, rect.right - 260) + 'px';
+  document.getElementById('urgenteRefBox').style.display = 'none';
+  document.getElementById('urgenteOperarioBox').style.display = 'none';
+  panel.classList.add('open');
+}
+function urgenteCerrarPanel(){
+  document.getElementById('urgentePanel').classList.remove('open');
+}
+function urgenteSeleccionar(tipo){
+  urgenteTipoSeleccionado = tipo;
+  const def = URGENTE_DEFS[tipo];
+  if(urgenteModoActual==='admin'){
+    const sel = document.getElementById('urgenteOperarioSelect');
+    sel.innerHTML = cfgOperarios.filter(o=>o.tipoAcceso==='app_operario').map(o=>`<option value="${o.nombre}">${o.nombre}</option>`).join('')
+      + '<option value="Administración">Administración (interno)</option>';
+    document.getElementById('urgenteOperarioBox').style.display = 'block';
+  }
+  document.getElementById('urgenteRefBox').style.display = def.necesitaRef ? 'block' : 'none';
+  if(!def.necesitaRef && urgenteModoActual!=='admin'){
+    urgenteCrear(tipo, 'Tomás', null);
+    urgenteCerrarPanel();
+  } else if(!def.necesitaRef && urgenteModoActual==='admin'){
+    // esperar selección de operario visible; se confirma con el mismo botón de enviar
+    document.getElementById('urgenteRefBox').style.display = 'block';
+    document.getElementById('urgenteRefInput').style.display = 'none';
+  }
+}
+function urgenteConfirmarConRef(){
+  const def = URGENTE_DEFS[urgenteTipoSeleccionado];
+  const ref = def.necesitaRef ? document.getElementById('urgenteRefInput').value.trim() : null;
+  if(def.necesitaRef && !ref){ alert('Escribe el número de expediente.'); return; }
+  const operario = urgenteModoActual==='admin' ? document.getElementById('urgenteOperarioSelect').value : 'Tomás';
+  urgenteCrear(urgenteTipoSeleccionado, operario, ref);
+  document.getElementById('urgenteRefInput').value = '';
+  document.getElementById('urgenteRefInput').style.display = 'block';
+  urgenteCerrarPanel();
+}
+function urgenteCrear(tipo, operario, referencia){
+  const def = URGENTE_DEFS[tipo];
+  const alerta = {
+    id: Date.now(), tipo, operario, referencia, estado:'pendiente', asignadoA:null,
+    hora: new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})
+  };
+  ALERTAS_URGENTES.unshift(alerta);
+  registrarActividad(operario==='Administración'?(adminSesionUsuario?adminSesionUsuario.nombre:'Administración'):operario,'Atención urgente',`${def.label}${referencia?' · Exp. '+referencia:''}`);
+  urgenteRenderTodas();
+  urgenteIniciarBeeps(alerta.id);
+}
+function urgenteIniciarBeeps(id){
+  const alerta = ALERTAS_URGENTES.find(a=>a.id===id);
+  if(!alerta) return;
+  const def = URGENTE_DEFS[alerta.tipo];
+  playUrgentBeeps(def.pitidos);
+  URGENTE_BEEP_INTERVALS[id] = setInterval(()=>{
+    const a = ALERTAS_URGENTES.find(x=>x.id===id);
+    if(!a || a.estado!=='pendiente'){ clearInterval(URGENTE_BEEP_INTERVALS[id]); delete URGENTE_BEEP_INTERVALS[id]; return; }
+    playUrgentBeeps(def.pitidos);
+  }, 10000);
+}
+function urgenteRenderTodas(){
+  const cont = document.getElementById('urgenteContainer');
+  if(!cont) return;
+  const enAdmin = document.getElementById('viewAdmin') && document.getElementById('viewAdmin').classList.contains('active');
+  if(!enAdmin){ cont.innerHTML = ''; return; }
+  const visibles = ALERTAS_URGENTES.filter(a=>a.estado!=='finalizada' && (a.estado==='pendiente' || (adminSesionUsuario && a.asignadoA===adminSesionUsuario.nombre)));
+  cont.innerHTML = visibles.map(a=>{
+    const def = URGENTE_DEFS[a.tipo];
+    const asignada = a.estado==='asignada';
+    return `<div class="urgente-card ${asignada?'asignada':''}" onclick="${asignada?'':`urgenteAsignar(${a.id})`}">
+      <div class="tipo">🚨 ${def.label}</div>
+      <div class="detalle">${a.operario} · ${a.hora}${a.referencia ? ' · Exp. '+a.referencia : ''}</div>
+      ${asignada ? `<div class="detalle">Asignada a ${a.asignadoA}</div><button onclick="event.stopPropagation();urgenteIrAlChat(${a.id})">Ir al chat</button> <button onclick="event.stopPropagation();urgenteFinalizar(${a.id})">Finalizar</button>` : ''}
+    </div>`;
+  }).join('');
+}
+function urgenteAsignar(id){
+  const alerta = ALERTAS_URGENTES.find(a=>a.id===id);
+  if(!alerta || alerta.estado!=='pendiente') return;
+  alerta.estado = 'asignada';
+  alerta.asignadoA = adminSesionUsuario ? adminSesionUsuario.nombre : 'Administración';
+  registrarActividad(alerta.asignadoA,'Asignación de atención urgente',URGENTE_DEFS[alerta.tipo].label);
+  urgenteRenderTodas();
+  urgenteIrAlChat(id);
+}
+function urgenteIrAlChat(id){
+  const alerta = ALERTAS_URGENTES.find(a=>a.id===id);
+  if(!alerta) return;
+  showSub('chat');
+  chatSetTab('individual');
+  if(alerta.operario!=='Administración') chatSeleccionarOperario(alerta.operario);
+}
+function urgenteFinalizar(id){
+  const alerta = ALERTAS_URGENTES.find(a=>a.id===id);
+  if(!alerta) return;
+  alerta.estado = 'finalizada';
+  if(URGENTE_BEEP_INTERVALS[id]){ clearInterval(URGENTE_BEEP_INTERVALS[id]); delete URGENTE_BEEP_INTERVALS[id]; }
+  urgenteRenderTodas();
+}
+
 function opEnviarChat(){
   const input = document.getElementById('opChatInput');
   const texto = input.value.trim();
   if(!texto) return;
-  chatObtenerHilo('Tomás').push({de:'Tomás', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}), visto:false});
+  chatObtenerHilo('Tomás').push({de:'Tomás', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}), visto:false, idioma:idiomaViewerOperario()});
+  registrarActividad('Tomás','Mensaje de chat','Chat con administración');
   input.value = '';
   opPintarChat();
   playChatSound();
@@ -2063,7 +2362,7 @@ function chatEnviarDifusion(){
   if(!texto || chatDifusionSeleccion.size===0){ alert('Escribe un mensaje y selecciona al menos un operario.'); return; }
   const hora = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
   chatDifusionSeleccion.forEach(nombre=>{
-    chatObtenerHilo(nombre).push({de:'admin', texto, hora, visto:false, remitente: adminSesionUsuario ? `${adminSesionUsuario.nombre} ${adminSesionUsuario.apellidos||''}`.trim() : 'Administración'});
+    chatObtenerHilo(nombre).push({de:'admin', texto, hora, visto:false, idioma:idiomaViewerAdmin(), remitente: adminSesionUsuario ? `${adminSesionUsuario.nombre} ${adminSesionUsuario.apellidos||''}`.trim() : 'Administración'});
   });
   playChatSound();
   const nombreEmisor = adminSesionUsuario ? adminSesionUsuario.nombre : 'Administración';
@@ -2145,7 +2444,7 @@ function chatPintarGrupo(){
   document.getElementById('chatGrupoMiembrosBar').innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px;">${miembrosChips}${addSelector}</div>`;
   thread.innerHTML = grupo.mensajes.map(m=>{
     const etiqueta = m.sistema ? '' : `<b style="display:block;font-size:11px;color:var(--green);margin-bottom:3px;">${m.de==='admin' ? m.remitente : m.de}</b>`;
-    return `<div class="chat-bubble ${m.de==='admin'?'mine':'theirs'}" style="${m.sistema?'opacity:0.7;font-style:italic;font-size:12px;align-self:center;':''}">${etiqueta}${chatContenidoBurbuja(m)}<span class="hora">${m.hora}</span></div>`;
+    return `<div class="chat-bubble ${m.de==='admin'?'mine':'theirs'}" style="${m.sistema?'opacity:0.7;font-style:italic;font-size:12px;align-self:center;':''}">${etiqueta}${chatContenidoBurbuja(m, idiomaViewerAdmin(), chatPintarGrupo)}<span class="hora">${m.hora}</span></div>`;
   }).join('') || '<div class="empty-hint">Sin mensajes todavía.</div>';
   thread.scrollTop = thread.scrollHeight;
 }
@@ -2187,7 +2486,7 @@ function chatEnviarGrupo(){
   const input = document.getElementById('chatInputGrupo');
   const texto = input.value.trim();
   if(!texto) return;
-  grupo.mensajes.push({de:'admin', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}), remitente: adminSesionUsuario ? adminSesionUsuario.nombre : 'Administración'});
+  grupo.mensajes.push({de:'admin', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}), idioma:idiomaViewerAdmin(), remitente: adminSesionUsuario ? adminSesionUsuario.nombre : 'Administración'});
   input.value = '';
   chatPintarGrupo();
   playChatSound();
@@ -2279,7 +2578,7 @@ function opPintarChatDirecto(){
   document.getElementById('opDirectoInfo').textContent = `Chat directo con ${opDirectoActivo} (sin administración).`;
   const hilo = chatObtenerHiloDirecto('Tomás', opDirectoActivo);
   document.getElementById('opDirectoThread').innerHTML = hilo.map(m=>`
-    <div class="chat-bubble ${m.de==='Tomás'?'mine':'theirs'}"><b style="display:block;font-size:11px;color:var(--green);margin-bottom:3px;">${m.de}</b>${chatContenidoBurbuja(m)}<span class="hora">${m.hora}</span></div>
+    <div class="chat-bubble ${m.de==='Tomás'?'mine':'theirs'}"><b style="display:block;font-size:11px;color:var(--green);margin-bottom:3px;">${m.de}</b>${chatContenidoBurbuja(m, idiomaViewerOperario(), opPintarChatDirecto)}<span class="hora">${m.hora}</span></div>
   `).join('') || '<div class="empty-hint">Sin mensajes todavía. Escribe el primero.</div>';
   const thread = document.getElementById('opDirectoThread');
   thread.scrollTop = thread.scrollHeight;
@@ -2289,7 +2588,7 @@ function opDirectoEnviar(){
   const input = document.getElementById('opDirectoInput');
   const texto = input.value.trim();
   if(!texto) return;
-  chatObtenerHiloDirecto('Tomás', opDirectoActivo).push({de:'Tomás', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})});
+  chatObtenerHiloDirecto('Tomás', opDirectoActivo).push({de:'Tomás', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}), idioma:idiomaViewerOperario()});
   input.value = '';
   opPintarChatDirecto();
   opPintarGruposDisponibles();
@@ -2307,7 +2606,7 @@ function opGrupoEnviar(){
   const input = document.getElementById('opGrupoInput');
   const texto = input.value.trim();
   if(!texto) return;
-  grupo.mensajes.push({de:'Tomás', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})});
+  grupo.mensajes.push({de:'Tomás', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}), idioma:idiomaViewerOperario()});
   input.value = '';
   opPintarGrupoActivo();
   playChatSound();
@@ -2344,7 +2643,7 @@ function chatPintarAdmin(){
   nombreBox.innerHTML = `Conversación con <b>${chatOperarioSeleccionado}</b>`;
   const hilo = chatObtenerHilo(chatOperarioSeleccionado);
   thread.innerHTML = hilo.map(m=>`
-    <div class="chat-bubble ${m.de==='admin'?'mine':'theirs'}" style="${m.sistema?'opacity:0.8;':''}">${chatEtiquetaGrupalHtml(m)}${chatContenidoBurbuja(m)}<span class="hora">${m.hora}${m.de==='admin' ? ` <span style="color:${m.visto?'#5AC8E8':'inherit'};">${m.visto?'✓✓':'✓'}</span>` : ''}</span></div>
+    <div class="chat-bubble ${m.de==='admin'?'mine':'theirs'}" style="${m.sistema?'opacity:0.8;':''}">${chatEtiquetaGrupalHtml(m)}${chatContenidoBurbuja(m, idiomaViewerAdmin(), chatPintarAdmin)}<span class="hora">${m.hora}${m.de==='admin' ? ` <span style="color:${m.visto?'#5AC8E8':'inherit'};">${m.visto?'✓✓':'✓'}</span>` : ''}</span></div>
   `).join('') || '<div class="empty-hint">Sin mensajes todavía.</div>';
   thread.scrollTop = thread.scrollHeight;
 }
@@ -2353,7 +2652,8 @@ function chatEnviarAdmin(){
   const input = document.getElementById('chatInputAdmin');
   const texto = input.value.trim();
   if(!texto) return;
-  chatObtenerHilo(chatOperarioSeleccionado).push({de:'admin', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}), visto:false, remitente: adminSesionUsuario ? `${adminSesionUsuario.nombre} ${adminSesionUsuario.apellidos||''}`.trim() : 'Administración'});
+  chatObtenerHilo(chatOperarioSeleccionado).push({de:'admin', texto, hora:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}), visto:false, idioma:idiomaViewerAdmin(), remitente: adminSesionUsuario ? `${adminSesionUsuario.nombre} ${adminSesionUsuario.apellidos||''}`.trim() : 'Administración'});
+  registrarActividad(adminSesionUsuario?adminSesionUsuario.nombre:'Administración','Mensaje de chat',`Con ${chatOperarioSeleccionado}`);
   input.value = '';
   chatRenderOperariosList();
   chatPintarAdmin();
@@ -2548,6 +2848,7 @@ function panelResolver(id, estado){
   if(s){
     const yaResuelta = s.estado!=='pendiente';
     s.estado = estado;
+    registrarActividad(adminSesionUsuario?adminSesionUsuario.nombre:'Administración','Resolución de vacaciones',`${s.op} · ${estado}`);
     if(!yaResuelta && estado==='denegado' && s.diasAnioAnterior>0){
       const op = cfgOperarios.find(o=>o.nombre===s.op);
       if(op){ op.vacPendientesAnioAnterior += s.diasAnioAnterior; if(op.nombre==='Tomás') opPintarStatsVacaciones(); }
@@ -2696,6 +2997,70 @@ function dlDescargarGestionPagos(){
   const ops = dlOperariosSeleccionados();
   if(!ops.length){ alert('Selecciona al menos un operario.'); return; }
   alert(`Generando PDF de gestión de pagos — ${periodo}\n\nOperarios incluidos (${ops.length}), una hoja A4 por cada uno con registro horario + nómina + horas extra + urgencias/pluses, menos cobros de contado pendientes, dietas y transferencia de nómina ya ingresada:\n${ops.join('\n')}\n\nArchivo: gestion_pagos_${periodo.replace(/\s/g,'_')}.pdf`);
+}
+
+/* ===== Registro de actividad ===== */
+let ACTIVIDAD_LOG = [];
+function registrarActividad(usuario, accion, detalle){
+  if(!usuario) return;
+  ACTIVIDAD_LOG.unshift({
+    usuario, accion, detalle: detalle||'',
+    fecha: '08/07/2026',
+    hora: new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+  });
+}
+function actAplicarVisibilidad(){
+  const bloque = document.getElementById('bloqueRegistroActividad');
+  if(!bloque) return;
+  const permitido = adminSesionUsuario && adminSesionUsuario.permisos.actividad;
+  bloque.classList.toggle('hidden', !permitido);
+}
+function actActualizarPeriodo(){
+  const modo = document.getElementById('actModoPeriodo').value;
+  document.getElementById('actCampoMes').style.display = modo==='mes' ? 'block' : 'none';
+  document.getElementById('actCampoDesde').style.display = modo==='fechas' ? 'block' : 'none';
+  document.getElementById('actCampoHasta').style.display = modo==='fechas' ? 'block' : 'none';
+}
+function actToggleTodos(marcado){
+  const box = document.getElementById('actPersonasLista');
+  box.style.display = marcado ? 'none' : 'block';
+  if(!marcado){
+    box.innerHTML = cfgOperarios.map(o=>`
+      <label class="checkline"><input type="checkbox" class="actPersonaCheck" value="${o.nombre}" checked> ${o.nombre}${o.tipoAcceso==='panel_administracion'?' · panel':''}</label>
+    `).join('');
+  }
+}
+function actPersonasSeleccionadas(){
+  if(document.getElementById('actTodos').checked) return cfgOperarios.map(o=>o.nombre);
+  return Array.from(document.querySelectorAll('.actPersonaCheck:checked')).map(c=>c.value);
+}
+function actDescargarPDF(){
+  const modo = document.getElementById('actModoPeriodo').value;
+  let periodoTxt;
+  if(modo==='fechas'){
+    const desde = document.getElementById('actFechaDesde').value, hasta = document.getElementById('actFechaHasta').value;
+    if(!desde || !hasta){ alert('Indica la fecha de inicio y fin.'); return; }
+    const dDesde = new Date(desde), dHasta = new Date(hasta);
+    const mesesDiff = (dHasta.getFullYear()-dDesde.getFullYear())*12 + (dHasta.getMonth()-dDesde.getMonth());
+    if(dHasta < dDesde){ alert('La fecha de fin no puede ser anterior a la de inicio.'); return; }
+    if(mesesDiff > 3){ alert('El rango máximo es de 3 meses.'); return; }
+    periodoTxt = `del ${desde} al ${hasta}`;
+  } else {
+    periodoTxt = document.getElementById('actMes').selectedOptions[0].textContent;
+  }
+  const personas = actPersonasSeleccionadas();
+  if(!personas.length){ alert('Selecciona al menos una persona.'); return; }
+  const entradas = ACTIVIDAD_LOG.filter(e=>personas.includes(e.usuario));
+  const box = document.getElementById('actResultado');
+  box.innerHTML = `<div class="empty-hint" style="margin-bottom:8px;">Vista previa — ${periodoTxt} · ${personas.length} persona${personas.length===1?'':'s'} · ${entradas.length} acciones registradas. El PDF final llevaría una hoja por persona.</div>` +
+    `<div class="table">` +
+    `<div class="trow head" style="grid-template-columns:1.2fr 1fr 1.6fr 1fr;"><span>Usuario</span><span>Acción</span><span>Detalle</span><span>Fecha / hora</span></div>` +
+    (entradas.length ? entradas.slice(0,50).map(e=>`
+      <div class="trow" style="grid-template-columns:1.2fr 1fr 1.6fr 1fr;">
+        <div>${e.usuario}</div><div>${e.accion}</div><div>${e.detalle}</div><div class="mono">${e.fecha} ${e.hora}</div>
+      </div>`).join('') : '<div class="trow" style="color:var(--ink-soft);">Sin actividad registrada para esta selección.</div>') +
+    `</div>` +
+    (entradas.length>50 ? `<div class="empty-hint" style="margin-top:6px;">Mostrando las 50 más recientes de ${entradas.length}. El PDF descargado las incluiría todas.</div>` : '');
 }
 function panelRenderNotifFestivos(){
   const box = document.getElementById('notifFestivosTabla');
@@ -2912,7 +3277,8 @@ function panelRenderAccesos(){
         : op.accesoEstado==='activo' ? `Usuario: <b>${op.usuario||'—'}</b>` : '<span class="empty-hint">Acceso desactivado</span>';
       let accion = '';
       if(op.accesoEstado==='sin_activar'){
-        accion = `<button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="panelGenerarCodigo('${op.id}')">${op.codigoDescarga?'Regenerar código':'Generar código'}</button>`;
+        accion = `<button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="panelGenerarCodigo('${op.id}')">${op.codigoDescarga?'Regenerar código':'Generar código'}</button>`
+          + (op.codigoDescarga ? ` <button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;color:var(--green);border-color:var(--green);" onclick="opEnviarEnlacePorCorreo('${op.id}')">✉ Enviar enlace</button>` : '');
       } else if(op.accesoEstado==='activo'){
         accion = `<button class="smallbtn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;color:var(--red);border-color:var(--red);" onclick="panelRevocarAcceso('${op.id}')">Revocar acceso</button>`;
       } else {
@@ -3126,9 +3492,9 @@ const LABORABLES_JULIO = diasLaborablesMes(2026,6);
 function cfgNuevoOp(over){
   return Object.assign({
     id:'op'+Math.random().toString(36).slice(2,8), color:'#5B6560', nombre:'Nuevo', apellidos:'operario', dni:'', email:'', telefono:'',
-    poblacion:'', fechaAlta:'', correoInterno:null, claveInterna:null, festivoLocal1:null, festivoLocal2:null,
+    poblacion:'', fechaAlta:'', correoInterno:null, claveInterna:null, festivoLocal1:null, festivoLocal2:null, idioma:'es',
     tipoAcceso:'app_operario', esSuperAdmin:false,
-    permisos:{general:false,operarios:false,guardias:false,calendario:false,accesos:false,fichaje:false,vacaciones:false,eventos:false,correos:false,chat:false},
+    permisos:{general:false,operarios:false,guardias:false,calendario:false,accesos:false,fichaje:false,vacaciones:false,eventos:false,correos:false,chat:false,actividad:false},
     tipoPago:'nomina', nominaNeta:1500, irpf:200, precioHora:10, precioExtra:12, precioSabado:15,
     vacTotal:22, vacDisfrutados:0, vacPendientesAnioAnterior:0,
     accesoEstado:'sin_activar', codigoDescarga:null, usuario:null, clave:null,
@@ -3141,7 +3507,7 @@ function cfgNuevoOp(over){
 let cfgOperarios = [
   cfgNuevoOp({color:'#1F6E52', nombre:'Tomás', apellidos:'García Ruiz', dni:'39XXXXXXA', email:'tomas.garcia@correo.com', telefono:'611 222 333', poblacion:'Cambrils', fechaAlta:'2020-09-02', festivoLocal1:'2026-01-20', festivoLocal2:'2026-07-15', correoInterno:'tgarcialtcliteco@liteco-serveis.com', claveInterna:'a1b2c3d4', nominaNeta:1700, irpf:250, haceUrgencias:true, tieneDietas:true, puedeRetener:true,
     vacTotal:30, vacDisfrutados:8, vacPendientesAnioAnterior:3, checks:{1:true,2:false,3:false,4:false,5:true}, versionInstalada:'1.2.0',
-    accesoEstado:'activo', codigoDescarga:null, usuario:'tomas', clave:'1234',
+    accesoEstado:'sin_activar', codigoDescarga:'591742038614', usuario:null, clave:null,
     mensual:{ horasExtra:25, horasSabado:0, ausenciasDieta:3, urgencias:[{concepto:4,ref:'26/2151',precio:30},{concepto:8,ref:'26/2151',precio:100}], cobros:[{ref:'26/2149',importe:50,estado:'pendiente'}] }}),
   cfgNuevoOp({color:'#2A5C8C', nombre:'Marc', apellidos:'Serra Puig', dni:'40XXXXXXB', nominaNeta:1550, irpf:210, tieneDietas:true, checks:{1:false,2:false,3:false,4:true,5:false},
     mensual:{ horasExtra:10, horasSabado:0, ausenciasDieta:5, urgencias:[], cobros:[] }}),
@@ -3153,12 +3519,17 @@ let cfgOperarios = [
     mensual:{ horasExtra:0, horasSabado:0, ausenciasDieta:0, urgencias:[], cobros:[] }}),
   cfgNuevoOp({color:'#A66A1E', nombre:'Jordi', apellidos:'Camps Bofill', dni:'44XXXXXXF', nominaNeta:1480, irpf:190, checks:{1:false,2:false,3:false,4:true,5:false},
     mensual:{ horasExtra:7, horasSabado:0, ausenciasDieta:0, urgencias:[{concepto:2,ref:'26/2180',precio:60}], cobros:[] }}),
+  cfgNuevoOp({color:'#3A6B8A', nombre:'Stefano', apellidos:'Rossi', dni:'50XXXXXXK', nominaNeta:1500, irpf:200, idioma:'it', checks:{1:false,2:false,3:false,4:true,5:false},
+    mensual:{ horasExtra:0, horasSabado:0, ausenciasDieta:0, urgencias:[], cobros:[] }}),
+  cfgNuevoOp({color:'#7A1F1F', nombre:'Miquel', apellidos:'Limbos Tena', dni:'40935162S', email:'m.limbos@litecosl.com', telefono:'620245539', poblacion:'Amposta', fechaAlta:'1994-01-01', tipoAcceso:'panel_administracion', esSuperAdmin:true,
+    accesoEstado:'sin_activar', codigoDescarga:'204871936520', checks:{1:false,2:false,3:true,4:false,5:false},
+    permisos:{general:true,operarios:true,guardias:true,calendario:true,accesos:true,fichaje:false,vacaciones:true,eventos:true,correos:true,chat:true,actividad:true}}),
   cfgNuevoOp({color:'#2F6B4F', nombre:'Marta', apellidos:'Soler Vidal', dni:'45XXXXXXG', tipoAcceso:'panel_administracion', esSuperAdmin:true,
     accesoEstado:'activo', usuario:'marta', clave:'admin123', vacTotal:25, vacDisfrutados:5, vacPendientesAnioAnterior:0, checks:{1:false,2:false,3:true,4:false,5:false},
-    permisos:{general:true,operarios:true,guardias:true,calendario:true,accesos:true,fichaje:true,vacaciones:true,eventos:true,correos:true,chat:true}}),
+    permisos:{general:true,operarios:true,guardias:true,calendario:true,accesos:true,fichaje:true,vacaciones:true,eventos:true,correos:true,chat:true,actividad:true}}),
   cfgNuevoOp({color:'#8B6F3A', nombre:'Jordi', apellidos:'Puig Mestre', dni:'46XXXXXXH', tipoAcceso:'panel_administracion', esSuperAdmin:false,
     accesoEstado:'sin_activar', codigoDescarga:'482915630074', vacTotal:22, vacDisfrutados:4, vacPendientesAnioAnterior:2, checks:{1:false,2:false,3:true,4:false,5:false},
-    permisos:{general:true,operarios:true,guardias:false,calendario:false,accesos:false,fichaje:true,vacaciones:true,eventos:true,correos:true,chat:true}})
+    permisos:{general:true,operarios:true,guardias:false,calendario:false,accesos:false,fichaje:true,vacaciones:true,eventos:true,correos:true,chat:true,actividad:false}})
 ];
 let cfgSelected = cfgOperarios[0].id;
 let cfgTab = 'config';
@@ -3171,6 +3542,31 @@ function cfgRenderSidebar(){
 }
 function cfgSeleccionar(id){ cfgSelected=id; cfgRenderSidebar(); cfgCargar(); }
 const COLORES_NUEVOS_OPERARIOS = ['#1F6E52','#2A5C8C','#5A3F94','#B14B2A','#A13A63','#A66A1E','#2F6B4F','#8B6F3A','#3A6B8A','#7A4F9E'];
+function cfgGuardarOperario(){
+  const op = cfgOpActual();
+  // fuerza el volcado de todos los campos visibles, por si alguno no disparó su evento 'input'
+  op.nombre = document.getElementById('cf_nombre').value;
+  op.apellidos = document.getElementById('cf_apellidos').value;
+  op.dni = document.getElementById('cf_dni').value;
+  op.email = document.getElementById('cf_email').value;
+  op.telefono = document.getElementById('cf_telefono').value;
+  op.poblacion = document.getElementById('cf_poblacion').value;
+  op.fechaAlta = document.getElementById('cf_fechaAlta').value;
+  cfgRenderSidebar();
+  cfgPintarCorreoGenerado();
+  const ok = document.getElementById('cfgGuardadoOk');
+  ok.style.display = 'inline';
+  setTimeout(()=>{ ok.style.display = 'none'; }, 2500);
+}
+window.addEventListener('beforeunload', function(e){
+  // aviso de seguridad: si por algún motivo el navegador fuera a cerrarse con cambios en el
+  // formulario de Operarios sin haber pasado por el guardado en memoria, se avisa antes de perderlos
+  const campo = document.getElementById('cf_nombre');
+  if(campo && document.getElementById('sub-operarios') && document.getElementById('sub-operarios').classList.contains('active')){
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
 function cfgNuevoOperarioUI(){
   const color = COLORES_NUEVOS_OPERARIOS[cfgOperarios.length % COLORES_NUEVOS_OPERARIOS.length];
   const nuevo = cfgNuevoOp({color, nombre:'Nuevo', apellidos:'operario'});
@@ -3233,7 +3629,8 @@ function cfgPintarPermisosZonas(){
     <label class="checkline"><input type="checkbox" ${op.permisos[s.key]?'checked':''} onchange="cfgOpActual().permisos['${s.key}']=this.checked; if(typeof panelRenderUsuarios==='function') panelRenderUsuarios();"> ${s.label}</label>
   `).join('') + `<label class="checkline"><input type="checkbox" ${op.permisos.fichaje?'checked':''} onchange="cfgOpActual().permisos.fichaje=this.checked; if(typeof panelRenderUsuarios==='function') panelRenderUsuarios();"> Fichaje de despacho</label>`
     + `<label class="checkline"><input type="checkbox" ${op.permisos.vacaciones?'checked':''} onchange="cfgOpActual().permisos.vacaciones=this.checked; if(typeof panelRenderUsuarios==='function') panelRenderUsuarios();"> Vacaciones (solicitar días propios)</label>`
-    + `<label class="checkline"><input type="checkbox" ${op.permisos.correos?'checked':''} onchange="cfgOpActual().permisos.correos=this.checked; if(typeof panelRenderUsuarios==='function') panelRenderUsuarios();"> Gestor de correos (consulta)</label>`;
+    + `<label class="checkline"><input type="checkbox" ${op.permisos.correos?'checked':''} onchange="cfgOpActual().permisos.correos=this.checked; if(typeof panelRenderUsuarios==='function') panelRenderUsuarios();"> Gestor de correos (consulta)</label>`
+    + `<label class="checkline"><input type="checkbox" ${op.permisos.actividad?'checked':''} onchange="cfgOpActual().permisos.actividad=this.checked; if(typeof panelRenderUsuarios==='function') panelRenderUsuarios(); if(typeof actAplicarVisibilidad==='function') actAplicarVisibilidad();"> Registro de actividad</label>`;
 }
 function setTipoPago(t){
   const op=cfgOpActual(); op.tipoPago=t;
@@ -3264,6 +3661,7 @@ function cfgCargar(){
   document.getElementById('cf_telefono').value=op.telefono||'';
   document.getElementById('cf_poblacion').value=op.poblacion||'';
   document.getElementById('cf_fechaAlta').value=op.fechaAlta||'';
+  document.getElementById('cf_idioma').value=op.idioma||'es';
   document.getElementById('cf_festivoLocal1').value=op.festivoLocal1||'';
   document.getElementById('cf_festivoLocal2').value=op.festivoLocal2||'';
   actualizarVacTotalPorAlta(op);
@@ -3327,6 +3725,7 @@ function cfgBind(id, prop, tipo){
 ['nombre','apellidos','dni','email','telefono','poblacion','fechaAlta','festivoLocal1','festivoLocal2'].forEach(p=>cfgBind('cf_'+p,p,'text'));
 ['nominaNeta','irpf','precioHora','precioExtra','precioSabado','precioDieta','precioParking'].forEach(p=>cfgBind('cf_'+p,p,'num'));
 document.getElementById('cf_zonaGuardia').addEventListener('change', ()=>{ cfgOpActual().zonaGuardia=document.getElementById('cf_zonaGuardia').value; });
+document.getElementById('cf_idioma').addEventListener('change', ()=>{ cfgOpActual().idioma=document.getElementById('cf_idioma').value; });
 ['horasExtra','horasSabado','ausenciasDieta'].forEach(p=>{
   document.getElementById('mn_'+p).addEventListener('input', ()=>{ cfgOpActual().mensual[p]=parseFloat(document.getElementById('mn_'+p).value)||0; cfgRecalcular(); });
 });
@@ -3548,14 +3947,39 @@ function genRender(){
   document.getElementById('genTablaLaborables').innerHTML=tabla;
 }
 
+function procesarEnlaceDescarga(){
+  const params = new URLSearchParams(window.location.search);
+  const codigo = params.get('codigo');
+  if(!codigo) return;
+  const opConCodigo = cfgOperarios.find(o=>o.codigoDescarga===codigo);
+  if(!opConCodigo) return;
+  if(opConCodigo.tipoAcceso==='app_operario'){
+    mostrarApp('operario');
+    document.getElementById('opCodigoInput').value = codigo;
+  } else {
+    mostrarApp('admin');
+    document.getElementById('adminGateActivar').style.display = 'block';
+    document.getElementById('adminGateLogin').style.display = 'none';
+    document.getElementById('adminCodigoInput').value = codigo;
+  }
+}
+function enlaceDescargaPara(codigo){
+  const base = window.location.href.split('?')[0];
+  return `${base}?codigo=${codigo}`;
+}
+function opEnviarEnlacePorCorreo(opId){
+  const op = cfgOperarios.find(o=>o.id===opId);
+  if(!op) return;
+  if(!op.email){ alert('Este operario no tiene correo electrónico configurado. Añádelo en Operarios → Configuración.'); return; }
+  if(!op.codigoDescarga){ alert('Este usuario no tiene un código de descarga pendiente.'); return; }
+  const enlace = enlaceDescargaPara(op.codigoDescarga);
+  alert(`Correo enviado\n\nPara: ${op.email}\nAsunto: Acceso a tu aplicativo de empresa\n\nHola ${op.nombre},\n\nPulsa este enlace desde tu teléfono para activar tu acceso:\n${enlace}\n\nEl código ya viene incorporado en el enlace: solo tendrás que confirmarlo y crear tu usuario y contraseña.\nEste enlace es de un solo uso y personal, no lo compartas.`);
+}
+
 opRenderGate();
 opPintarAlertaFestivo();
 opPintarVersionBadge();
 adminPintarVersionBadge();
-document.getElementById('opLoginUsuario').value = 'tomas';
-document.getElementById('opLoginClave').value = '1234';
-document.getElementById('adminLoginUsuario').value = 'marta';
-document.getElementById('adminLoginClave').value = 'admin123';
 evPoblarPrecios();
 adminRenderGate();
 
@@ -3573,8 +3997,26 @@ opActualizarFormCobro();
 opPintarUrgencias();
 opEstadoIngresos();
 panelRenderAll();
+procesarEnlaceDescarga();
 </script>
 <div id="chatToastContainer"></div>
+<div id="urgenteContainer"></div>
+<div id="urgentePanel" class="urgente-panel">
+  <div style="font-weight:700;margin-bottom:10px;">Atención urgente</div>
+  <div class="opt" onclick="urgenteSeleccionar('llamada')">📞 Llamada</div>
+  <div class="opt" onclick="urgenteSeleccionar('ubicacion')">📍 Ubicación</div>
+  <div class="opt" onclick="urgenteSeleccionar('sin_trabajo')">🧰 Sin trabajo</div>
+  <div class="opt" onclick="urgenteSeleccionar('cliente_no_contesta')">☎️ Cliente no contesta</div>
+  <div id="urgenteRefBox" style="display:none;margin-top:8px;">
+    <input type="text" id="urgenteRefInput" placeholder="Nº de expediente" style="width:100%;padding:8px;border:1px solid var(--line-strong);border-radius:7px;margin-bottom:8px;">
+    <button class="sendbtn" onclick="urgenteConfirmarConRef()">Enviar alarma</button>
+  </div>
+  <div id="urgenteOperarioBox" style="display:none;margin-top:8px;">
+    <select id="urgenteOperarioSelect" style="width:100%;padding:8px;margin-bottom:8px;"></select>
+  </div>
+  <a href="#" onclick="urgenteCerrarPanel();return false;" style="display:block;text-align:center;margin-top:6px;font-size:11px;color:var(--ink-soft);">Cancelar</a>
+</div>
+
 
 <div class="modal-bg" id="vacSigModal" style="position:fixed;z-index:200;">
   <div class="modal" style="max-width:420px;margin:0 auto;border-radius:20px;">
