@@ -243,7 +243,7 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
 
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:10px;">
-    <div style="width:36px;height:36px;border-radius:8px;background:#cd2122;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;letter-spacing:0.5px;flex-shrink:0;">LTC</div>
+    <div style="width:36px;height:36px;border-radius:8px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;"><img src="ltclogo.png" alt="LTC" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.parentElement.style.display='none';"></div>
     <div>
       <h1 style="margin:0;">Sistema de gestión de trabajos <span class="mono" id="adminVersionBadge" style="font-size:11px;font-weight:500;color:var(--ink-soft);vertical-align:middle;"></span></h1>
       <div style="font-size:11px;color:var(--ink-soft);margin-top:-2px;">LTC Liteco Obres en General</div>
@@ -266,7 +266,7 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
             <div class="title">Hola, Tomás <span class="mono" id="opVersionBadge" style="font-size:10px;font-weight:500;color:var(--ink-soft);vertical-align:middle;"></span></div>
             <div class="sub">martes, 8 de julio de 2026</div>
           </div>
-          <div style="width:30px;height:30px;border-radius:7px;background:#cd2122;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10px;flex-shrink:0;">LTC</div>
+          <div style="width:30px;height:30px;border-radius:7px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;"><img src="ltclogo.png" alt="LTC" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.parentElement.style.display='none';"></div>
         </div>
         <div class="guardia-banner"><span class="guardia-dot"></span>Estás de guardia esta semana · Zona 1, Tarragona</div>
 
@@ -448,7 +448,7 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
 
         <div id="opGate" class="opgate">
           <div id="opGateActivar" class="opgate-panel">
-            <div style="width:52px;height:52px;border-radius:12px;background:#cd2122;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;margin:0 auto 12px;">LTC</div>
+            <div style="width:52px;height:52px;border-radius:12px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;overflow:hidden;"><img src="ltclogo.png" alt="LTC" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.parentElement.style.display='none';"></div>
             <div class="opgate-title" style="text-align:center;">APP LTC</div>
             <div class="opgate-desc" style="text-align:center;font-weight:600;margin-bottom:2px;">Activar aplicativo</div>
             <div class="opgate-desc">Introduce el código de descarga de 12 cifras que te ha entregado administración. Solo puede usarse una vez y en este teléfono.</div>
@@ -466,7 +466,7 @@ input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;borde
           </div>
 
           <div id="opGateLogin" class="opgate-panel" style="display:none;">
-            <div style="width:52px;height:52px;border-radius:12px;background:#cd2122;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;margin:0 auto 12px;">LTC</div>
+            <div style="width:52px;height:52px;border-radius:12px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;overflow:hidden;"><img src="ltclogo.png" alt="LTC" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.parentElement.style.display='none';"></div>
             <div class="opgate-title" style="text-align:center;">APP LTC</div>
             <div class="opgate-desc" style="text-align:center;font-weight:600;margin-bottom:2px;">Iniciar sesión</div>
             <div class="opgate-desc">Aplicativo de empresa. Acceso individual, no transferible.</div>
@@ -1220,6 +1220,7 @@ function adminUsuariosList(){ return cfgOperarios.filter(o=>o.tipoAcceso==='pane
 let adminSesionUsuario = null;
 let adminSesionIniciada = false;
 
+let adminGatePanelManual = 'login';
 function adminRenderGate(){
   const gate = document.getElementById('adminGate');
   const panels = ['adminGateActivar','adminGateCrearCuenta','adminGateLogin','adminGateRevocado'];
@@ -1235,11 +1236,23 @@ function adminRenderGate(){
       return;
     }
   }
+  if(adminSesionUsuario){
+    const fresh = cfgOperarios.find(u=>u.id===adminSesionUsuario.id);
+    if(fresh && fresh.accesoEstado==='revocado'){
+      panels.forEach(p=>document.getElementById(p).style.display='none');
+      document.getElementById('adminGateRevocado').style.display='block';
+      gate.classList.add('open');
+      return;
+    }
+  }
+  // respeta la pantalla en la que el usuario está manualmente (login / activar / crear cuenta)
   panels.forEach(p=>document.getElementById(p).style.display='none');
-  document.getElementById('adminGateLogin').style.display='block';
+  const idMap = {login:'adminGateLogin', activar:'adminGateActivar', crearCuenta:'adminGateCrearCuenta'};
+  document.getElementById(idMap[adminGatePanelManual] || 'adminGateLogin').style.display='block';
   gate.classList.add('open');
 }
 function adminMostrarActivar(){
+  adminGatePanelManual = 'activar';
   document.getElementById('adminGateLogin').style.display = 'none';
   document.getElementById('adminGateActivar').style.display = 'block';
 }
@@ -1263,6 +1276,7 @@ function adminValidarCodigo(){
   }
   document.getElementById('adminGateActivar').style.display = 'none';
   document.getElementById('adminGateCrearCuenta').style.display = 'block';
+  adminGatePanelManual = 'crearCuenta';
 }
 function adminCrearCuenta(){
   const usuario = document.getElementById('adminNuevoUsuario').value.trim();
@@ -1273,6 +1287,7 @@ function adminCrearCuenta(){
   adminSesionUsuario.accesoEstado = 'activo';
   adminSesionUsuario.codigoDescarga = null;
   adminSesionIniciada = true;
+  adminGatePanelManual = 'login';
   adminRenderGate();
   if(typeof panelRenderUsuarios==='function') panelRenderUsuarios();
   if(typeof panelRenderAccesos==='function') panelRenderAccesos();
@@ -1321,6 +1336,7 @@ function adminAplicarPermisos(){
 function adminCerrarSesion(){
   adminSesionUsuario = null;
   adminSesionIniciada = false;
+  adminGatePanelManual = 'login';
   document.getElementById('adminLoginUsuario').value = '';
   document.getElementById('adminLoginClave').value = '';
   adminRenderGate();
@@ -1416,6 +1432,7 @@ function adminCrearUsuario(){
 setInterval(()=>{ if(document.getElementById('viewAdmin').classList.contains('active')) adminRenderGate(); }, 1500);
 
 let opSesionIniciada = false;
+let opGatePanelManual = 'activar';
 function opRenderGate(){
   const op = cfgOperarios.find(o=>o.nombre==='Tomás');
   const gate = document.getElementById('opGate');
@@ -1433,8 +1450,10 @@ function opRenderGate(){
     document.getElementById('opGateActualizar').style.display='block';
     gate.classList.add('open');
   } else if(op.accesoEstado==='sin_activar'){
+    // respeta si el usuario ya validó el código y está en la pantalla de crear cuenta
     panels.forEach(p=>document.getElementById(p).style.display='none');
-    document.getElementById('opGateActivar').style.display='block';
+    const idMap = {activar:'opGateActivar', crearCuenta:'opGateCrearCuenta'};
+    document.getElementById(idMap[opGatePanelManual] || 'opGateActivar').style.display='block';
     gate.classList.add('open');
     opSesionIniciada = false;
   } else if(op.accesoEstado==='activo' && !opSesionIniciada){
@@ -1475,6 +1494,7 @@ function opValidarCodigo(){
   }
   document.getElementById('opCodigoWarn').style.display = 'none';
   op.codigoDescarga = null; // de un solo uso: se invalida en el momento en que se valida
+  opGatePanelManual = 'crearCuenta';
   document.getElementById('opGateActivar').style.display = 'none';
   document.getElementById('opGateCrearCuenta').style.display = 'block';
 }
@@ -1488,6 +1508,7 @@ function opCrearCuenta(){
   op.accesoEstado = 'activo';
   op.codigoDescarga = null;
   opSesionIniciada = true;
+  opGatePanelManual = 'activar';
   opRenderGate();
   if(typeof panelRenderAccesos==='function') panelRenderAccesos();
 }
